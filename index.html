@@ -1,0 +1,1966 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#080808">
+    <meta name="description" content="Nini's JobTracker — track job applications, manage interviews, and organize follow-ups in one place.">
+
+    <title>Nini's JobTracker</title>
+
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #080808;
+            --surface: #101010;
+            --surface-2: #151515;
+            --surface-3: #1c1c1c;
+            --border: #262626;
+            --text: #f5f5f5;
+            --muted: #888888;
+            --lime: #c7ff5e;
+            --lime-soft: rgba(199, 255, 94, 0.10);
+            --green: #7ee787;
+            --orange: #ffbd69;
+            --red: #ff7777;
+            --blue: #84aaff;
+            --radius: 18px;
+            --transition: 0.25s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            min-height: 100vh;
+            background:
+                radial-gradient(ellipse at 50% -15%, rgba(199, 255, 94, 0.065), transparent 42%),
+                var(--bg);
+            color: var(--text);
+            font-family: "DM Sans", sans-serif;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        button,
+        input,
+        select,
+        textarea {
+            font: inherit;
+        }
+
+        button {
+            cursor: pointer;
+        }
+
+        button:focus-visible,
+        input:focus-visible,
+        select:focus-visible,
+        textarea:focus-visible {
+            outline: 2px solid var(--lime);
+            outline-offset: 3px;
+        }
+
+        .app-shell {
+            width: min(1440px, 100%);
+            margin: 0 auto;
+            padding: 0 42px 40px;
+        }
+
+        /* NAVIGATION */
+
+        .topbar {
+            height: 86px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 42px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+        }
+
+        .brand-icon {
+            width: 43px;
+            height: 43px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--lime);
+            color: #080808;
+            border-radius: 13px;
+            font-family: "Space Grotesk", sans-serif;
+            font-size: 25px;
+            font-weight: 700;
+            box-shadow: 0 0 25px rgba(199, 255, 94, 0.12);
+        }
+
+        .brand-name {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.25;
+            gap: 4px;
+            font-family: "Space Grotesk", sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: 0.4px;
+        }
+
+        .brand-name span {
+            color: var(--lime);
+            font-size: 9px;
+            letter-spacing: 2.4px;
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 22px;
+        }
+
+        .local-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .status-dot {
+            width: 7px;
+            height: 7px;
+            background: var(--lime);
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(199, 255, 94, 0.65);
+        }
+
+        .avatar {
+            width: 39px;
+            height: 39px;
+            display: grid;
+            place-items: center;
+            border: 1px solid #3b3b3b;
+            border-radius: 50%;
+            background: #191919;
+            color: var(--lime);
+            font-weight: 700;
+        }
+
+        /* BUTTONS */
+
+        .btn {
+            min-height: 43px;
+            padding: 0 17px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 9px;
+            border: 1px solid transparent;
+            border-radius: 11px;
+            font-size: 13px;
+            font-weight: 700;
+            transition:
+                transform var(--transition),
+                background var(--transition),
+                border-color var(--transition),
+                box-shadow var(--transition);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-primary {
+            color: #080808;
+            background: var(--lime);
+            box-shadow: 0 0 0 rgba(199, 255, 94, 0);
+        }
+
+        .btn-primary:hover {
+            background: #d5ff87;
+            box-shadow: 0 5px 25px rgba(199, 255, 94, 0.13);
+        }
+
+        .btn-secondary {
+            color: var(--text);
+            background: var(--surface-2);
+            border-color: var(--border);
+        }
+
+        .btn-secondary:hover {
+            border-color: #555;
+            background: var(--surface-3);
+        }
+
+        .btn-danger {
+            color: var(--red);
+            background: rgba(255, 119, 119, 0.08);
+            border-color: rgba(255, 119, 119, 0.2);
+        }
+
+        /* HERO */
+
+        .hero {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 25px;
+            margin-bottom: 35px;
+            animation: fadeUp 0.6s ease both;
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            margin-bottom: 15px;
+            color: var(--lime);
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 2.2px;
+            text-transform: uppercase;
+        }
+
+        .eyebrow::before {
+            content: "";
+            width: 19px;
+            height: 1px;
+            background: var(--lime);
+        }
+
+        h1,
+        h2,
+        h3 {
+            font-family: "Space Grotesk", sans-serif;
+        }
+
+        .hero h1 {
+            margin-bottom: 10px;
+            font-size: clamp(30px, 4vw, 43px);
+            font-weight: 600;
+            line-height: 1.18;
+            letter-spacing: -1.8px;
+        }
+
+        .hero h1 span {
+            color: var(--lime);
+        }
+
+        .hero p {
+            max-width: 540px;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .hero-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        /* STATS */
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 17px;
+            margin-bottom: 29px;
+        }
+
+        .stat-card {
+            position: relative;
+            min-height: 160px;
+            overflow: hidden;
+            padding: 22px;
+            background: linear-gradient(145deg, #141414, #0e0e0e);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            transition:
+                transform 0.3s ease,
+                border-color 0.3s ease,
+                box-shadow 0.3s ease;
+            animation: fadeUp 0.6s ease both;
+        }
+
+        .stat-card:nth-child(2) {
+            animation-delay: 0.08s;
+        }
+
+        .stat-card:nth-child(3) {
+            animation-delay: 0.16s;
+        }
+
+        .stat-card:nth-child(4) {
+            animation-delay: 0.24s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(199, 255, 94, 0.4);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .stat-card::after {
+            content: "";
+            position: absolute;
+            width: 110px;
+            height: 110px;
+            top: -60px;
+            right: -40px;
+            border-radius: 50%;
+            background: var(--lime);
+            opacity: 0.035;
+            filter: blur(5px);
+            pointer-events: none;
+        }
+
+        .stat-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 19px;
+        }
+
+        .stat-label {
+            color: #a3a3a3;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .stat-icon {
+            width: 35px;
+            height: 35px;
+            display: grid;
+            place-items: center;
+            border: 1px solid #303030;
+            border-radius: 11px;
+            color: var(--lime);
+            background: rgba(199, 255, 94, 0.055);
+            font-size: 17px;
+        }
+
+        .stat-number {
+            font-family: "Space Grotesk", sans-serif;
+            font-size: 35px;
+            font-weight: 600;
+            line-height: 1;
+            letter-spacing: -1px;
+        }
+
+        .stat-foot {
+            margin-top: 12px;
+            color: var(--muted);
+            font-size: 11px;
+        }
+
+        .stat-foot strong {
+            color: var(--lime);
+            font-weight: 600;
+        }
+
+        .response-progress {
+            height: 4px;
+            margin-top: 12px;
+            overflow: hidden;
+            background: #292929;
+            border-radius: 10px;
+        }
+
+        #responseProgress {
+            width: 0%;
+            height: 100%;
+            background: var(--lime);
+            border-radius: inherit;
+            transition: width 0.6s ease;
+        }
+
+        /* SECTION HEADERS */
+
+        .section-heading {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            margin-bottom: 18px;
+        }
+
+        .section-title {
+            font-size: 19px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+
+        .section-subtitle {
+            margin-top: 4px;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        /* APPLICATION PANEL */
+
+        .applications-panel {
+            overflow: hidden;
+            background: rgba(16, 16, 16, 0.92);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            animation: fadeUp 0.7s ease both;
+        }
+
+        .panel-header {
+            padding: 23px 24px 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .panel-heading-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 22px;
+        }
+
+        .application-count {
+            padding: 5px 10px;
+            border: 1px solid #333;
+            border-radius: 8px;
+            color: var(--lime);
+            background: #171a12;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        .search-box {
+            position: relative;
+            flex: 1;
+            max-width: 340px;
+        }
+
+        .search-icon {
+            position: absolute;
+            top: 50%;
+            left: 14px;
+            color: var(--muted);
+            transform: translateY(-50%);
+            pointer-events: none;
+        }
+
+        .search-box input {
+            width: 100%;
+            height: 43px;
+            padding: 0 14px 0 39px;
+            color: var(--text);
+            background: #0b0b0b;
+            border: 1px solid #292929;
+            border-radius: 10px;
+            transition: border-color var(--transition);
+        }
+
+        .search-box input:focus {
+            border-color: rgba(199, 255, 94, 0.6);
+            outline: none;
+        }
+
+        .search-box input::placeholder {
+            color: #666;
+        }
+
+        .toolbar-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .select-control {
+            height: 43px;
+            max-width: 190px;
+            padding: 0 30px 0 12px;
+            color: #d9d9d9;
+            background: #111;
+            border: 1px solid #292929;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        .select-control option {
+            color: white;
+            background: #111;
+        }
+
+        /* STATUS FILTERS */
+
+        .filter-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 19px;
+            overflow-x: auto;
+            scrollbar-width: thin;
+        }
+
+        .filter-btn {
+            flex-shrink: 0;
+            padding: 8px 12px;
+            color: #999;
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 600;
+            transition: all var(--transition);
+        }
+
+        .filter-btn:hover {
+            color: white;
+            background: #191919;
+        }
+
+        .filter-btn.active {
+            color: var(--lime);
+            background: var(--lime-soft);
+            border-color: rgba(199, 255, 94, 0.2);
+        }
+
+        .filter-count {
+            margin-left: 4px;
+            color: #777;
+            font-size: 10px;
+        }
+
+        .filter-btn.active .filter-count {
+            color: var(--lime);
+        }
+
+        /* TABLE */
+
+        .table-wrap {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .job-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            white-space: nowrap;
+        }
+
+        .job-table thead {
+            background: #121212;
+        }
+
+        .job-table th {
+            padding: 14px 19px;
+            color: #777;
+            border-bottom: 1px solid var(--border);
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .job-table td {
+            padding: 18px 19px;
+            border-bottom: 1px solid #202020;
+            font-size: 12px;
+            vertical-align: middle;
+        }
+
+        .job-table tbody tr {
+            transition: background 0.2s ease;
+            animation: rowAppear 0.35s ease both;
+        }
+
+        .job-table tbody tr:hover {
+            background: rgba(255, 255, 255, 0.025);
+        }
+
+        .job-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .company-cell {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .company-avatar {
+            width: 37px;
+            height: 37px;
+            display: grid;
+            place-items: center;
+            flex-shrink: 0;
+            border: 1px solid #303030;
+            border-radius: 11px;
+            background: #1b1b1b;
+            color: var(--lime);
+            font-family: "Space Grotesk", sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .company-name {
+            color: #f1f1f1;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .job-role {
+            margin-top: 3px;
+            color: #777;
+            font-size: 11px;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 9px;
+            border: 1px solid transparent;
+            border-radius: 7px;
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        .status-badge::before {
+            content: "";
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        .status-applied {
+            color: var(--blue);
+            background: rgba(132, 170, 255, 0.09);
+            border-color: rgba(132, 170, 255, 0.15);
+        }
+
+        .status-assessment {
+            color: var(--orange);
+            background: rgba(255, 189, 105, 0.09);
+            border-color: rgba(255, 189, 105, 0.15);
+        }
+
+        .status-interview {
+            color: var(--lime);
+            background: rgba(199, 255, 94, 0.09);
+            border-color: rgba(199, 255, 94, 0.15);
+        }
+
+        .status-offer {
+            color: var(--green);
+            background: rgba(126, 231, 135, 0.09);
+            border-color: rgba(126, 231, 135, 0.15);
+        }
+
+        .status-rejected {
+            color: var(--red);
+            background: rgba(255, 119, 119, 0.08);
+            border-color: rgba(255, 119, 119, 0.15);
+        }
+
+        .follow-up {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            color: #aaa;
+            font-size: 11px;
+        }
+
+        .follow-up.overdue {
+            color: var(--red);
+        }
+
+        .follow-up.today {
+            color: var(--orange);
+        }
+
+        .follow-up.upcoming {
+            color: var(--lime);
+        }
+
+        .row-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .icon-btn {
+            width: 31px;
+            height: 31px;
+            display: inline-grid;
+            place-items: center;
+            color: #999;
+            background: #181818;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            transition: all var(--transition);
+        }
+
+        .icon-btn:hover {
+            color: var(--lime);
+            border-color: #505d37;
+            background: #20251a;
+        }
+
+        .icon-btn.delete-btn:hover {
+            color: var(--red);
+            border-color: rgba(255, 119, 119, 0.35);
+            background: rgba(255, 119, 119, 0.08);
+        }
+
+        .job-link {
+            color: var(--lime);
+            text-decoration: none;
+        }
+
+        .job-link:hover {
+            text-decoration: underline;
+        }
+
+        /* EMPTY STATE */
+
+        .empty-state {
+            padding: 65px 20px;
+            text-align: center;
+        }
+
+        .empty-icon {
+            width: 65px;
+            height: 65px;
+            display: grid;
+            place-items: center;
+            margin: 0 auto 18px;
+            color: var(--lime);
+            background: var(--lime-soft);
+            border: 1px solid rgba(199, 255, 94, 0.16);
+            border-radius: 20px;
+            font-size: 26px;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 7px;
+            font-size: 19px;
+        }
+
+        .empty-state p {
+            max-width: 340px;
+            margin: 0 auto 21px;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        /* FOOTER */
+
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            padding: 24px 3px 0;
+            color: #666;
+            font-size: 11px;
+        }
+
+        .footer-brand {
+            color: #999;
+            letter-spacing: 1px;
+        }
+
+        .footer-brand span {
+            color: var(--lime);
+        }
+
+        /* MODAL */
+
+        .modal {
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.78);
+            backdrop-filter: blur(9px);
+        }
+
+        .modal.active {
+            display: flex;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .modal-content {
+            width: min(560px, 100%);
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 27px;
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 20px;
+            box-shadow: 0 25px 100px rgba(0, 0, 0, 0.6);
+            animation: modalUp 0.25s ease;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .modal-header h2 {
+            margin-bottom: 5px;
+            font-size: 23px;
+            letter-spacing: -0.7px;
+        }
+
+        .modal-header p {
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .close-modal {
+            width: 35px;
+            height: 35px;
+            display: grid;
+            place-items: center;
+            color: #aaa;
+            background: #1c1c1c;
+            border: 1px solid #303030;
+            border-radius: 10px;
+            font-size: 20px;
+            line-height: 1;
+        }
+
+        .close-modal:hover {
+            color: white;
+            border-color: #555;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-group label {
+            color: #ccc;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .required {
+            color: var(--lime);
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 11px 12px;
+            color: var(--text);
+            background: #090909;
+            border: 1px solid #303030;
+            border-radius: 9px;
+            transition: border-color var(--transition);
+        }
+
+        .form-group input,
+        .form-group select {
+            min-height: 43px;
+        }
+
+        .form-group textarea {
+            min-height: 95px;
+            resize: vertical;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: var(--lime);
+            outline: none;
+        }
+
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            color: #666;
+        }
+
+        .form-group input[type="date"] {
+            color-scheme: dark;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 26px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        /* TOAST */
+
+        .toast {
+            position: fixed;
+            right: 25px;
+            bottom: 25px;
+            z-index: 2000;
+            max-width: calc(100% - 40px);
+            padding: 13px 18px;
+            color: var(--text);
+            background: #1b1b1b;
+            border: 1px solid #3a3a3a;
+            border-left: 3px solid var(--lime);
+            border-radius: 11px;
+            box-shadow: 0 15px 45px rgba(0, 0, 0, 0.4);
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(12px);
+            transition: all 0.25s ease;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ANIMATIONS */
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(14px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes modalUp {
+            from {
+                opacity: 0;
+                transform: translateY(12px) scale(0.985);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        @keyframes rowAppear {
+            from {
+                opacity: 0;
+                transform: translateY(5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* RESPONSIVE */
+
+        @media (max-width: 1100px) {
+            .app-shell {
+                padding-right: 25px;
+                padding-left: 25px;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .hero h1 {
+                font-size: 35px;
+            }
+
+            .job-table th,
+            .job-table td {
+                padding-right: 14px;
+                padding-left: 14px;
+            }
+        }
+
+        @media (max-width: 720px) {
+            .app-shell {
+                padding: 0 15px 25px;
+            }
+
+            .topbar {
+                height: 72px;
+                margin-bottom: 30px;
+            }
+
+            .brand-icon {
+                width: 38px;
+                height: 38px;
+                font-size: 22px;
+            }
+
+            .brand-name {
+                font-size: 13px;
+            }
+
+            .local-badge {
+                display: none;
+            }
+
+            .topbar-right {
+                gap: 10px;
+            }
+
+            .hero {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 20px;
+            }
+
+            .hero h1 {
+                font-size: 34px;
+            }
+
+            .hero-actions {
+                width: 100%;
+            }
+
+            .hero-actions .btn {
+                flex: 1;
+            }
+
+            .stats-grid {
+                gap: 10px;
+            }
+
+            .stat-card {
+                min-height: 140px;
+                padding: 16px;
+            }
+
+            .stat-number {
+                font-size: 30px;
+            }
+
+            .stat-top {
+                margin-bottom: 15px;
+            }
+
+            .panel-header {
+                padding: 18px 15px;
+            }
+
+            .toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-box {
+                max-width: none;
+            }
+
+            .toolbar-right {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .select-control {
+                width: 100%;
+                max-width: none;
+            }
+
+            .filter-bar {
+                margin-top: 15px;
+            }
+
+            .footer {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+        }
+
+        @media (max-width: 420px) {
+            .brand-name {
+                font-size: 12px;
+            }
+
+            .brand-name span {
+                font-size: 8px;
+            }
+
+            .avatar {
+                width: 35px;
+                height: 35px;
+            }
+
+            .hero h1 {
+                font-size: 30px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .stat-card {
+                padding: 13px;
+            }
+
+            .stat-label {
+                font-size: 11px;
+            }
+
+            .stat-number {
+                font-size: 27px;
+            }
+
+            .stat-icon {
+                width: 30px;
+                height: 30px;
+                font-size: 14px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-group.full-width {
+                grid-column: auto;
+            }
+
+            .modal-content {
+                padding: 20px;
+            }
+
+            .panel-heading-row {
+                align-items: flex-start;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                scroll-behavior: auto !important;
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-shell">
+
+        <!-- NAVIGATION -->
+        <header class="topbar">
+            <a href="#" class="brand" aria-label="Nini's JobTracker home" style="text-decoration:none;">
+                <div class="brand-icon">N</div>
+                <div class="brand-name">
+                    NINI'S
+                    <span>JOBTRACKER</span>
+                </div>
+            </a>
+
+            <div class="topbar-right">
+                <div class="local-badge">
+                    <span class="status-dot"></span>
+                    Your personal workspace
+                </div>
+                <div class="avatar" aria-label="Nini's profile">N</div>
+            </div>
+        </header>
+
+        <main>
+            <!-- HERO -->
+            <section class="hero">
+                <div>
+                    <div class="eyebrow">Your career workspace</div>
+                    <h1>Make your next move<br><span>count.</span></h1>
+                    <p>Every application is a step forward. Keep your opportunities organized and your career moving.</p>
+                </div>
+
+                <div class="hero-actions">
+                    <button class="btn btn-secondary" id="exportBtn" type="button">
+                        <span aria-hidden="true">↓</span> Export data
+                    </button>
+                    <button class="btn btn-primary" id="addJobBtn" type="button">
+                        <span aria-hidden="true">＋</span> Add application
+                    </button>
+                </div>
+            </section>
+
+            <!-- DASHBOARD STATS -->
+            <section class="stats-grid" aria-label="Application statistics">
+                <article class="stat-card">
+                    <div class="stat-top">
+                        <span class="stat-label">Total applications</span>
+                        <span class="stat-icon" aria-hidden="true">▤</span>
+                    </div>
+                    <div class="stat-number" id="totalApplications">0</div>
+                    <div class="stat-foot">Your career journey, tracked.</div>
+                </article>
+
+                <article class="stat-card">
+                    <div class="stat-top">
+                        <span class="stat-label">Interviews</span>
+                        <span class="stat-icon" aria-hidden="true">◉</span>
+                    </div>
+                    <div class="stat-number" id="totalInterviews">0</div>
+                    <div class="stat-foot">Opportunities to shine.</div>
+                </article>
+
+                <article class="stat-card">
+                    <div class="stat-top">
+                        <span class="stat-label">Offers received</span>
+                        <span class="stat-icon" aria-hidden="true">✧</span>
+                    </div>
+                    <div class="stat-number" id="totalOffers">0</div>
+                    <div class="stat-foot">Your hard work in action.</div>
+                </article>
+
+                <article class="stat-card">
+                    <div class="stat-top">
+                        <span class="stat-label">Response rate</span>
+                        <span class="stat-icon" aria-hidden="true">↗</span>
+                    </div>
+                    <div class="stat-number" id="responseRate">0%</div>
+                    <div class="response-progress">
+                        <div id="responseProgress"></div>
+                    </div>
+                    <div class="stat-foot">Applications with a response.</div>
+                </article>
+            </section>
+<!-- RESUME MANAGER -->
+<section class="section-heading" style="margin-top: 38px;">
+    <div>
+        <h2 class="section-title">My CV & Resumes</h2>
+        <p class="section-subtitle">Keep your career documents organized in one place.</p>
+    </div>
+</section>
+
+<section class="applications-panel" style="margin-bottom: 32px;">
+    <div style="padding: 24px;">
+        <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+            <div class="stat-icon" style="width:48px;height:48px;font-size:22px;">▤</div>
+
+            <div style="flex:1;min-width:180px;">
+                <h3 style="font-size:16px;margin-bottom:4px;">Resume library</h3>
+                <p style="color:#888;font-size:12px;">
+                    Upload PDF, DOC, or DOCX files for your job search.
+                </p>
+            </div>
+
+            <label for="resumeUpload" class="btn btn-primary">
+                + Upload resume
+            </label>
+
+            <input
+                type="file"
+                id="resumeUpload"
+                accept=".pdf,.doc,.docx"
+                multiple
+                hidden
+            >
+        </div>
+
+        <div id="resumeMessage" role="status" style="margin-top:15px;color:#c7ff5e;font-size:12px;"></div>
+
+        <div
+            id="resumeList"
+            style="display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;margin-top:20px;"
+        >
+            <p style="color:#777;font-size:12px;">
+                Your uploaded resumes will appear here.
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- INTERVIEW PREP STUDIO -->
+<section id="interviewPrepSection" style="margin-top:38px; margin-bottom:32px;">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap; margin-bottom:20px;">
+        <div>
+            <p style="color:#c7ff5e; font-size:10px; letter-spacing:2px; font-weight:700; margin-bottom:8px;">
+                CAREER DEVELOPMENT
+            </p>
+            <h2 style="font-size:23px; margin:0 0 7px;">Interview Prep Studio</h2>
+            <p style="color:#888; font-size:13px; margin:0;">
+                Your questions, answers, and company research — all in one place.
+            </p>
+        </div>
+
+        <div style="background:#151515; border:1px solid #292929; border-radius:12px; padding:12px 18px; min-width:110px;">
+            <div id="prepProgress" style="color:#c7ff5e; font-size:24px; font-weight:700;">0%</div>
+            <div style="color:#888; font-size:11px;">Prepared</div>
+        </div>
+    </div>
+
+    <div style="background:#101010; border:1px solid #292929; border-radius:16px; padding:22px;">
+        <form id="prepForm">
+            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px;">
+                <label style="font-size:12px; color:#aaa;">
+                    Company *
+                    <input id="prepCompany" required maxlength="100" placeholder="e.g. Google"
+                        style="display:block; width:100%; box-sizing:border-box; margin-top:7px; padding:12px; background:#080808; color:#fff; border:1px solid #333; border-radius:9px;">
+                </label>
+
+                <label style="font-size:12px; color:#aaa;">
+                    Job role
+                    <input id="prepRole" maxlength="100" placeholder="e.g. Software Engineer"
+                        style="display:block; width:100%; box-sizing:border-box; margin-top:7px; padding:12px; background:#080808; color:#fff; border:1px solid #333; border-radius:9px;">
+                </label>
+
+                <label style="font-size:12px; color:#aaa;">
+                    Interview round
+                    <select id="prepRound"
+                        style="display:block; width:100%; box-sizing:border-box; margin-top:7px; padding:12px; background:#080808; color:#fff; border:1px solid #333; border-radius:9px;">
+                        <option>HR Round</option>
+                        <option>Technical Round</option>
+                        <option>DSA / Coding</option>
+                        <option>Project Discussion</option>
+                        <option>Managerial Round</option>
+                        <option>Other</option>
+                    </select>
+                </label>
+
+                <label style="font-size:12px; color:#aaa;">
+                    Category
+                    <select id="prepCategory"
+                        style="display:block; width:100%; box-sizing:border-box; margin-top:7px; padding:12px; background:#080808; color:#fff; border:1px solid #333; border-radius:9px;">
+                        <option>Technical</option>
+                        <option>DSA</option>
+                        <option>DBMS</option>
+                        <option>OOPs</option>
+                        <option>Projects</option>
+                        <option>HR / Behavioral</option>
+                        <option>Company Research</option>
+                    </select>
+                </label>
+            </div>
+
+            <label style="display:block; font-size:12px; color:#aaa; margin-top:17px;">
+                Interview question *
+                <textarea id="prepQuestion" required maxlength="3000" rows="3"
+                    placeholder="e.g. Explain the difference between a process and a thread."
+                    style="display:block; width:100%; box-sizing:border-box; margin-top:7px; padding:12px; background:#080808; color:#fff; border:1px solid #333; border-radius:9px; resize:vertical;"></textarea>
+            </label>
+
+            <label style="display:block; font-size:12px; color:#aaa; margin-top:15px;">
+                Your answer / key points
+                <textarea id="prepAnswer" maxlength="8000" rows="4"
+                    placeholder="Write your answer, explanation, or revision notes..."
+                    style="display:block; width:100%; box-sizing:border-box; margin-top:7px; padding:12px; background:#080808; color:#fff; border:1px solid #333; border-radius:9px; resize:vertical;"></textarea>
+            </label>
+
+            <div style="display:flex; justify-content:flex-end; margin-top:16px;">
+                <button type="submit" class="btn btn-primary">+ Save question</button>
+            </div>
+        </form>
+    </div>
+
+    <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin:24px 0 14px;">
+        <h3 style="font-size:16px; margin:0;">Your preparation library</h3>
+        <input id="prepSearch" type="search" placeholder="Search questions or companies..."
+            style="width:min(100%,280px); box-sizing:border-box; padding:11px 13px; background:#101010; color:#fff; border:1px solid #333; border-radius:9px;">
+    </div>
+
+    <div id="prepMessage" role="status" aria-live="polite"
+        style="color:#c7ff5e; font-size:12px; margin-bottom:12px;"></div>
+
+    <div id="prepList" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr)); gap:14px;">
+        <p style="color:#777; font-size:13px;">Your saved interview questions will appear here.</p>
+    </div>
+</section>
+
+<!-- SALARY & OFFER COMPARISON -->
+<section id="offerComparisonSection" style="margin:40px 0;">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:22px;">
+    <div>
+      <p style="color:#c7ff5e;font-size:10px;letter-spacing:2px;font-weight:700;margin-bottom:8px;">MAKE YOUR NEXT MOVE</p>
+      <h2 style="font-size:23px;margin:0 0 7px;">Salary & Offer Comparison</h2>
+      <p style="color:#888;font-size:13px;margin:0;">Compare compensation, benefits, and career growth before you decide.</p>
+    </div>
+    <button id="offerExportBtn" type="button" style="padding:11px 15px;background:#151515;color:#c7ff5e;border:1px solid #c7ff5e;border-radius:9px;cursor:pointer;">Export CSV ↗</button>
+  </div>
+
+  <div style="background:#101010;border:1px solid #292929;border-radius:16px;padding:22px;margin-bottom:22px;">
+    <h3 id="offerFormTitle" style="font-size:16px;margin:0 0 18px;">＋ Add a job offer</h3>
+    <form id="offerForm">
+      <input id="offerEditId" type="hidden">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:14px;">
+        <label style="font-size:12px;color:#aaa;">Company *
+          <input id="offerCompany" required maxlength="100" placeholder="e.g. Google" style="display:block;box-sizing:border-box;width:100%;margin-top:7px;padding:12px;background:#080808;color:white;border:1px solid #333;border-radius:9px;">
+        </label>
+        <label style="font-size:12px;color:#aaa;">Role *
+          <input id="offerRole" required maxlength="100" placeholder="e.g. Software Engineer" style="display:block;box-sizing:border-box;width:100%;margin-top:7px;padding:12px;background:#080808;color:white;border:1px solid #333;border-radius:9px;">
+        </label>
+        <label style="font-size:12px;color:#aaa;">Annual CTC (₹ lakh) *
+          <input id="offerCtc" required type="number" min="0" max="10000" step="0.01" placeholder="e.g. 12" style="display:block;box-sizing:border-box;width:100%;margin-top:7px;padding:12px;background:#080808;color:white;border:1px solid #333;border-radius:9px;">
+        </label>
+        <label style="font-size:12px;color:#aaa;">Annual fixed pay (₹ lakh)
+          <input id="offerFixed" type="number" min="0" max="10000" step="0.01" placeholder="e.g. 9" style="display:block;box-sizing:border-box;width:100%;margin-top:7px;padding:12px;background:#080808;color:white;border:1px solid #333;border-radius:9px;">
+        </label>
+        <label style="font-size:12px;color:#aaa;">Annual variable pay (₹ lakh)
+          <input id="offerVariable" type="number" min="0" max="10000" step="0.01" placeholder="e.g. 1.5" style="display:block;box-sizing:border-box;width:100%;margin-top:7px;padding:12px;background:#080808;color:white;border:1px solid #333;border-radius:9px;">
+        </label>
+        <label style="font-size:12px;color:#aaa;">Joining bonus (₹ lakh)
+          <input id="offerBonus" type="number" min="0" max="10000" step="0.01" placeholder="e.g. 0.5" style="display:block;box-sizing:border-box;width:100%;margin-top:7px;padding:12px;background:#080808;color:white;border:1px solid #333;border-radius:9px;">
+        </label>
+        <label style="font-size:12px;color:#aaa;">Location
+          <input id="offerLocation" maxlength="100" placeholder="e.g. Bengaluru" style="display:block;box-sizing:border-box;width:100%;margin-top:7px;padding:12px;background:#080808;color:white;border:1px solid #333;border-radius:9px;">
+        </label>
+        <label style="font-size:12px;color:#aaa;">Work mode
+          <select id="offerMode" style="display:block;box-sizing:border-box;width:100%;margin-top:7px;padding:12px;background:#080808;color:white;border:1px solid #333;border-radius:9px;">
+            <option>Hybrid</option><option>Remote</option><option>On-site</option>
+          </select>
+        </label>
+        <label style="font-size:12px;color:#aaa;">Offer status
+          <select id="offerStatus" style="display:block;box-sizing:border-box;width:100%;margin-top:7px;padding:12px;background:#080808;color:white;border:1px solid #333;border-radius:9px;">
+            <option>Considering</option><option>Offer received</option><option>Accepted</option><option>Declined</option><option>Withdrawn</option>
+          </select>
+        </label>
+        <label style="font-size:12px;color:#aaa;">Decision / joining date
+          <input id="offerDate" type="date" style="display:block;box-sizing:border-box;width:100%;margin-top:7px;padding:12px;background:#080808;color:white;border:1px solid #333;border-radius:9px;">
+        </label>
+      </div>
+
+      <label style="display:block;font-size:12px;color:#aaa;margin-top:16px;">Benefits and notes
+        <textarea id="offerBenefits" maxlength="2000" rows="2" placeholder="Health insurance, learning budget, relocation support, bond, notice period..." style="display:block;box-sizing:border-box;width:100%;margin-top:7px;padding:12px;background:#080808;color:white;border:1px solid #333;border-radius:9px;resize:vertical;"></textarea>
+      </label>
+
+      <h4 style="font-size:13px;margin:22px 0 12px;">Your personal ratings (1 = low, 5 = excellent)</h4>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:14px;">
+        <label style="font-size:12px;color:#aaa;">Salary
+          <select id="offerRatingSalary" style="display:block;width:100%;margin-top:7px;padding:10px;background:#080808;color:white;border:1px solid #333;border-radius:8px;"><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select>
+        </label>
+        <label style="font-size:12px;color:#aaa;">Learning
+          <select id="offerRatingLearning" style="display:block;width:100%;margin-top:7px;padding:10px;background:#080808;color:white;border:1px solid #333;border-radius:8px;"><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select>
+        </label>
+        <label style="font-size:12px;color:#aaa;">Work-life balance
+          <select id="offerRatingBalance" style="display:block;width:100%;margin-top:7px;padding:10px;background:#080808;color:white;border:1px solid #333;border-radius:8px;"><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select>
+        </label>
+        <label style="font-size:12px;color:#aaa;">Career growth
+          <select id="offerRatingGrowth" style="display:block;width:100%;margin-top:7px;padding:10px;background:#080808;color:white;border:1px solid #333;border-radius:8px;"><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select>
+        </label>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:20px;">
+        <button id="offerCancelEditBtn" type="button" hidden style="padding:11px 14px;background:#171717;color:#ddd;border:1px solid #333;border-radius:9px;cursor:pointer;">Cancel edit</button>
+        <button type="submit" id="offerSaveBtn" style="padding:11px 17px;background:#c7ff5e;color:#101010;border:0;border-radius:9px;font-weight:700;cursor:pointer;">Save offer</button>
+      </div>
+    </form>
+  </div>
+
+  <div id="offerMessage" role="status" aria-live="polite" style="color:#c7ff5e;font-size:12px;margin-bottom:14px;"></div>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:22px;">
+    <div style="background:#101010;border:1px solid #292929;border-radius:12px;padding:16px;"><p style="color:#888;font-size:11px;margin:0 0 8px;">Offers tracked</p><strong id="offerTotal" style="font-size:24px;color:#c7ff5e;">0</strong></div>
+    <div style="background:#101010;border:1px solid #292929;border-radius:12px;padding:16px;"><p style="color:#888;font-size:11px;margin:0 0 8px;">Highest CTC</p><strong id="offerHighest" style="font-size:22px;color:#c7ff5e;">—</strong></div>
+    <div style="background:#101010;border:1px solid #292929;border-radius:12px;padding:16px;"><p style="color:#888;font-size:11px;margin:0 0 8px;">Top rated</p><strong id="offerTopRated" style="font-size:15px;color:#c7ff5e;overflow-wrap:anywhere;">—</strong></div>
+  </div>
+
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px;">
+    <h3 style="font-size:16px;margin:0;">Your offers</h3>
+    <input id="offerSearch" type="search" placeholder="Search company or role..." style="width:min(100%,260px);box-sizing:border-box;padding:11px;background:#101010;color:white;border:1px solid #333;border-radius:9px;">
+  </div>
+  <p style="color:#888;font-size:11px;margin-bottom:14px;">Select offers to compare up to three at once. Your score is a simple average of your four personal ratings, not a guarantee of the best job.</p>
+  <div id="offerCompareBar" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px;">
+    <span id="offerSelectedCount" style="color:#aaa;font-size:12px;">0 offers selected</span>
+    <button id="offerCompareBtn" type="button" style="padding:9px 12px;background:#c7ff5e;color:#101010;border:0;border-radius:8px;font-weight:700;cursor:pointer;">Compare selected</button>
+    <button id="offerClearCompareBtn" type="button" style="padding:9px 12px;background:#171717;color:#ddd;border:1px solid #333;border-radius:8px;cursor:pointer;">Clear selection</button>
+  </div>
+  <div id="offerCompareResult" style="margin-bottom:18px;"></div>
+  <div id="offerList" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,270px),1fr));gap:14px;"></div>
+</section>
+
+<!-- MY CAREER PROFILE -->
+<section id="careerProfileSection" style="margin:40px 0;">
+  <div style="margin-bottom:22px;">
+    <p style="color:#c7ff5e;font-size:10px;letter-spacing:2px;font-weight:700;margin-bottom:8px;">YOUR PROFESSIONAL IDENTITY</p>
+    <h2 style="font-size:23px;margin:0 0 7px;">My Career Profile</h2>
+    <p style="color:#888;font-size:13px;margin:0;">Your skills, experience, projects, and professional links in one place.</p>
+  </div>
+
+  <!-- PROFILE PREVIEW -->
+  <div style="background:#101010;border:1px solid #292929;border-radius:16px;padding:24px;margin-bottom:20px;">
+    <div style="display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap;">
+      <div style="width:60px;height:60px;flex-shrink:0;border-radius:16px;background:#c7ff5e;color:#101010;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;" id="careerInitials">N</div>
+      <div style="flex:1;min-width:180px;">
+        <h3 id="careerPreviewName" style="font-size:21px;margin:0 0 6px;overflow-wrap:anywhere;">Your Name</h3>
+        <p id="careerPreviewHeadline" style="color:#c7ff5e;font-size:13px;margin:0 0 8px;">Your professional headline</p>
+        <p id="careerPreviewLocation" style="color:#888;font-size:12px;margin:0;">Add your location</p>
+      </div>
+      <span id="careerCompletion" style="border:1px solid #384627;border-radius:20px;padding:8px 11px;color:#c7ff5e;font-size:11px;">Profile 0% complete</span>
+    </div>
+    <p id="careerPreviewBio" style="white-space:pre-wrap;color:#bbb;font-size:13px;line-height:1.8;margin:20px 0 0;">Your introduction will appear here.</p>
+    <div id="careerPreviewLinks" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;"></div>
+  </div>
+
+  <!-- PROFILE EDITOR -->
+  <div style="background:#101010;border:1px solid #292929;border-radius:16px;padding:22px;">
+    <form id="careerProfileForm">
+      <h3 style="font-size:16px;margin:0 0 16px;">Personal & professional details</h3>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:14px;">
+        <label style="font-size:12px;color:#aaa;">Full name *
+          <input id="careerName" required maxlength="100" placeholder="Your full name" autocomplete="name" style="display:block;box-sizing:border-box;width:100%;margin-top:7px;padding:12px;background:#080808;color:white;border:1px solid #333;border-radius:9px;">
+        </label>
+        <label style="font-size:12px;color:#aaa;">Professional headline
+          <input id="careerHeadline" maxlength="140" placeholder="e.g. Aspiring Software Engineer" style="display:block;box-sizing:border-box;width:100%;margin-top:7px;padding:12px;background:#080808;color:white;border:1px solid #333;border-radius:9px;">
+        </label>
+        <label style="font-size:12px;color:#aaa;">Target role
+          <input id="careerTargetRole" maxlength="100" placeholder="e.g. Frontend Developer" style="display:block;box-sizing:border-box;width:100%;margin-top:7px;padding:12px;background:#080808;color:white;border:1px solid #333;border-radius:9px;">
+        </label>
+        <label style="font-size:12px;color:#aaa;">Preferred location
+          <input id="careerLocation" maxlength="100" placeholder="e.g. Noida / Remote" style="display:block;box-sizing:border-box;width:100%;margin-top:7px;padding:12px;background:#080808;color:white;border:1px solid #333;border-radius:9px;">
+        </label>
+        <label style="font-size:12px;color:#aaa;">Degree
+          <input id="careerDegree" maxlength="120" placeholder="e.g. B.Tech in Computer Science" style="display:block;box-sizing:border-box;width:100%;margin-top:7px;padding:12px;background:#080808;color:white;border:1px solid #333;border-radius:9px;">
+        </label>
+        <label style="font-size:12px;color:#aaa;">College / university
+          <input id="careerCollege" maxlength="160" placeholder="Your college or university" style="display:block;box-sizing:border-box;width:100%;margin-top:7px;padding:12px;background:#080808;color:white;border:1px solid #333;border-radius:9px;">
+        </label>
+        <label style="font-size:12px;color:#aaa;">Graduation year
+          <input id="careerGraduation" type="number" min="2000" max="2100" step="1" placeholder="e.g. 2028" style="display:block;box-sizing:border-box;width:100%;margin-top:7px;padding:12px;background:#080808;color:white;border:1px solid #333;border-radius:9px;">
+        </label>
+      </div>
+
+      <label style="display:block;font-size:12px;color:#aaa;margin-top:16px;">About me
+        <textarea id="careerBio" maxlength="1500" rows="4" placeholder="Write a short introduction about your interests, strengths, and career goals..." style="display:block;box-sizing:border-box;width:100%;margin-top:7px;padding:12px;background:#080808;color:white;border:1px solid #333;border-radius:9px;resize:vertical;"></textarea>
+      </label>
+
+      <label style="display:block;font-size:12px;color:#aaa;margin-top:16px;">Technical skills
+        <textarea id="careerSkills" maxlength="1200" rows="3" placeholder="Java, Python, DSA, HTML, CSS, JavaScript, SQL..." style="display:block;box-sizing:border-box;width:100%;margin-top:7px;padding:12px;background:#080808;color:white;border:1px solid #333;border-radius:9px;resize:vertical;"></textarea>
+        <span style="display:block;color:#777;font-size:11px;margin-top:6px;">Separate skills with commas.</span>
+      </label>
+
+      <h3 style="font-size:16px;margin:25px 0 15px;">Professional links</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:14px;">
+        <label style="font-size:12px;color:#aaa;">GitHub URL
+          <input id="careerGithub" type="url" maxlength="300" placeholder="https://github.com/username" style="display:block;box-sizing:border-box;width:100%;margin-top:7px;padding:12px;background:#080808;color:white;border:1px solid #333;border-radius:9px;">
+        </label>
+        <label style="font-size:12px;color:#aaa;">LinkedIn URL
+          <input id="careerLinkedin" type="url" maxlength="300" placeholder="https://linkedin.com/in/username" style="display:block;box-sizing:border-box;width:100%;margin-top:7px;padding:12px;background:#080808;color:white;border:1px solid #333;border-radius:9px;">
+        </label>
+        <label style="font-size:12px;color:#aaa;">Portfolio URL
+          <input id="careerPortfolio" type="url" maxlength="300" placeholder="https://your-portfolio.com" style="display:block;box-sizing:border-box;width:100%;margin-top:7px;padding:12px;background:#080808;color:white;border:1px solid #333;border-radius:9px;">
+        </label>
+        <label style="font-size:12px;color:#aaa;">Other professional link
+          <input id="careerOtherLink" type="url" maxlength="300" placeholder="https://..." style="display:block;box-sizing:border-box;width:100%;margin-top:7px;padding:12px;background:#080808;color:white;border:1px solid #333;border-radius:9px;">
+        </label>
+      </div>
+
+      <h3 style="font-size:16px;margin:28px 0 7px;">Projects</h3>
+      <p style="color:#888;font-size:12px;margin:0 0 16px;">Add projects you've built and want to highlight on your profile.</p>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:14px;">
+        <label style="font-size:12px;color:#aaa;">Project name
+          <input id="careerProjectName" maxlength="120" placeholder="e.g. Customer Support Chatbot" style="display:block;box-sizing:border-box;width:100%;margin-top:7px;padding:12px;background:#080808;color:white;border:1px solid #333;border-radius:9px;">
+        </label>
+        <label style="font-size:12px;color:#aaa;">Project URL (optional)
+          <input id="careerProjectUrl" type="url" maxlength="300" placeholder="https://github.com/username/project" style="display:block;box-sizing:border-box;width:100%;margin-top:7px;padding:12px;background:#080808;color:white;border:1px solid #333;border-radius:9px;">
+        </label>
+      </div>
+      <label style="display:block;font-size:12px;color:#aaa;margin-top:14px;">Project description
+        <textarea id="careerProjectDescription" maxlength="1000" rows="2" placeholder="What does it do? Which technologies did you use?" style="display:block;box-sizing:border-box;width:100%;margin-top:7px;padding:12px;background:#080808;color:white;border:1px solid #333;border-radius:9px;resize:vertical;"></textarea>
+      </label>
+      <div style="margin-top:12px;">
+        <button id="careerAddProjectBtn" type="button" style="padding:10px 13px;background:#171717;color:#c7ff5e;border:1px solid #393939;border-radius:9px;cursor:pointer;">+ Add project</button>
+      </div>
+
+      <div id="careerProjectMessage" role="status" style="color:#c7ff5e;font-size:12px;margin-top:10px;"></div>
+      <div id="careerProjectList" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:12px;margin-top:15px;"></div>
+
+      <div id="careerProfileMessage" role="status" aria-live="polite" style="color:#c7ff5e;font-size:12px;margin-top:20px;"></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:15px;">
+        <button type="submit" style="padding:12px 17px;background:#c7ff5e;color:#101010;border:0;border-radius:9px;font-weight:700;cursor:pointer;">Save career profile</button>
+        <button id="careerExportBtn" type="button" style="padding:12px 15px;background:#171717;color:#c7ff5e;border:1px solid #393939;border-radius:9px;cursor:pointer;">Export profile JSON</button>
+      </div>
+    </form>
+  </div>
+</section>
+
+
+            <!-- APPLICATIONS -->
+            <section class="section-heading">
+                <div>
+                    <h2 class="section-title">Your applications</h2>
+                    <p class="section-subtitle">A clear view of every opportunity you're pursuing.</p>
+                </div>
+            </section>
+
+            <section class="applications-panel" aria-label="Job applications">
+                <div class="panel-header">
+                    <div class="panel-heading-row">
+                        <h3 class="section-title">Application tracker</h3>
+                        <span class="application-count" id="applicationCount">0 APPLICATIONS</span>
+                    </div>
+
+                    <div class="toolbar">
+                        <label class="search-box">
+                            <span class="search-icon" aria-hidden="true">⌕</span>
+                            <input
+                                type="search"
+                                id="searchInput"
+                                placeholder="Search company or role..."
+                                aria-label="Search applications"
+                            >
+                        </label>
+
+                        <div class="toolbar-right">
+                            <select id="sortSelect" class="select-control" aria-label="Sort applications">
+                                <option value="newest">Newest first</option>
+                                <option value="oldest">Oldest first</option>
+                                <option value="company">Company A–Z</option>
+                                <option value="followup">Follow-up date</option>
+                            </select>
+
+                            <button class="btn btn-primary" id="emptyAddBtn" type="button">
+                                ＋ Add new
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="filter-bar" id="filterBar" aria-label="Filter by application status">
+                        <button class="filter-btn active" type="button" data-status="All">
+                            All <span class="filter-count" id="countAll">0</span>
+                        </button>
+                        <button class="filter-btn" type="button" data-status="Applied">
+                            Applied <span class="filter-count" id="countApplied">0</span>
+                        </button>
+                        <button class="filter-btn" type="button" data-status="Assessment">
+                            Assessment <span class="filter-count" id="countAssessment">0</span>
+                        </button>
+                        <button class="filter-btn" type="button" data-status="Interview">
+                            Interview <span class="filter-count" id="countInterview">0</span>
+                        </button>
+                        <button class="filter-btn" type="button" data-status="Offer">
+                            Offer <span class="filter-count" id="countOffer">0</span>
+                        </button>
+                        <button class="filter-btn" type="button" data-status="Rejected">
+                            Rejected <span class="filter-count" id="countRejected">0</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-wrap" id="tableWrap">
+                    <table class="job-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Company / Role</th>
+                                <th scope="col">Applied date</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">Follow-up</th>
+                                <th scope="col">Job link</th>
+                                <th scope="col">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="jobTableBody"></tbody>
+                    </table>
+                </div>
+
+                <div class="empty-state" id="emptyState" style="display:none;">
+                    <div class="empty-icon" aria-hidden="true">＋</div>
+                    <h3>No applications yet</h3>
+                    <p>Start building your career dashboard. Add your first job application and track your progress here.</p>
+                    <button class="btn btn-primary" type="button" id="emptyStateAddBtn">
+                        ＋ Add your first application
+                    </button>
+                </div>
+            </section>
+        </main>
+
+        <!-- FOOTER -->
+        <footer class="footer">
+            <div class="footer-brand">NINI'S <span>JOBTRACKER</span></div>
+            <div>Your career, your way. Built with purpose.</div>
+        </footer>
+    </div>
+
+    <!-- ADD / EDIT APPLICATION MODAL -->
+    <div class="modal" id="jobModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h2 id="modalTitle">Add application</h2>
+                    <p>Every opportunity starts with a single step.</p>
+                </div>
+                <button class="close-modal" id="closeModalBtn" type="button" aria-label="Close dialog">×</button>
+            </div>
+
+            <form id="jobForm">
+                <input type="hidden" id="jobId">
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="company">Company name <span class="required">*</span></label>
+                        <input
+                            type="text"
+                            id="company"
+                            name="company"
+                            placeholder="e.g. Google"
+                            required
+                            maxlength="120"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="role">Job role <span class="required">*</span></label>
+                        <input
+                            type="text"
+                            id="role"
+                            name="role"
+                            placeholder="e.g. Software Engineer"
+                            required
+                            maxlength="120"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="appliedDate">Applied date <span class="required">*</span></label>
+                        <input type="date" id="appliedDate" name="appliedDate" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="status">Application status</label>
+                        <select id="status" name="status">
+                            <option value="Applied">Applied</option>
+                            <option value="Assessment">Assessment</option>
+                            <option value="Interview">Interview</option>
+                            <option value="Offer">Offer</option>
+                            <option value="Rejected">Rejected</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="followUp">Follow-up date</label>
+                        <input type="date" id="followUp" name="followUp">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="jobLink">Job posting URL</label>
+                        <input
+                            type="url"
+                            id="jobLink"
+                            name="jobLink"
+                            placeholder="https://example.com/job"
+                        >
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="notes">Notes</label>
+                        <textarea
+                            id="notes"
+                            name="notes"
+                            placeholder="Interview details, recruiter contact, preparation notes..."
+                            maxlength="2000"
+                        ></textarea>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button class="btn btn-secondary" id="cancelBtn" type="button">Cancel</button>
+                    <button class="btn btn-primary" id="saveJobBtn" type="submit">Save application</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- FEEDBACK MESSAGE -->
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <!-- EXISTING APPLICATION LOGIC -->
+    <script src="script.js"></script>
+
+    <!-- Small UI helpers; the existing script.js remains responsible for application data. -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const modal = document.getElementById("jobModal");
+            const addButtons = [
+                document.getElementById("addJobBtn"),
+                document.getElementById("emptyAddBtn"),
+                document.getElementById("emptyStateAddBtn")
+            ];
+
+            const closeButton = document.getElementById("closeModalBtn");
+            const cancelButton = document.getElementById("cancelBtn");
+            const form = document.getElementById("jobForm");
+            const appliedDate = document.getElementById("appliedDate");
+            const filterBar = document.getElementById("filterBar");
+            const toast = document.getElementById("toast");
+            let toastTimer;
+
+            function showToast(message) {
+                if (!toast) return;
+                toast.textContent = message;
+                toast.classList.add("show");
+                clearTimeout(toastTimer);
+                toastTimer = setTimeout(function () {
+                    toast.classList.remove("show");
+                }, 2800);
+            }
+
+            function openNewApplication() {
+                if (!modal || !form) return;
+
+                form.reset();
+
+                const hiddenId = document.getElementById("jobId");
+                if (hiddenId) hiddenId.value = "";
+
+                if (appliedDate) {
+                    appliedDate.value = new Date().toLocaleDateString("en-CA");
+                }
+
+                const title = document.getElementById("modalTitle");
+                const saveButton = document.getElementById("saveJobBtn");
+
+                if (title) title.textContent = "Add application";
+                if (saveButton) saveButton.textContent = "Save application";
+
+                modal.classList.add("active");
+                document.body.style.overflow = "hidden";
+
+                setTimeout(function () {
+                    const companyInput = document.getElementById("company");
+                    if (companyInput) companyInput.focus();
+                }, 80);
+            }
+
+            function closeModal() {
+                if (!modal) return;
+                modal.classList.remove("active");
+                document.body.style.overflow = "";
+            }
+
+            addButtons.forEach(function (button) {
+                if (button) {
+                    button.addEventListener("click", openNewApplication);
+                }
+            });
+
+            if (closeButton) closeButton.addEventListener("click", closeModal);
+            if (cancelButton) cancelButton.addEventListener("click", closeModal);
+
+            if (modal) {
+                modal.addEventListener("click", function (event) {
+                    if (event.target === modal) closeModal();
+                });
+            }
+
+            document.addEventListener("keydown", function (event) {
+                if (event.key === "Escape" && modal && modal.classList.contains("active")) {
+                    closeModal();
+                }
+            });
+
+            if (filterBar) {
+                filterBar.addEventListener("click", function (event) {
+                    const button = event.target.closest(".filter-btn");
+                    if (!button) return;
+
+                    filterBar.querySelectorAll(".filter-btn").forEach(function (item) {
+                        item.classList.remove("active");
+                    });
+
+                    button.classList.add("active");
+                });
+            }
+
+            if (form) {
+                form.addEventListener("submit", function () {
+                    // The existing script.js handles saving. Close after its submit handler
+                    // has had a chance to process the form.
+                    setTimeout(function () {
+                        if (!form.checkValidity()) return;
+
+                        // Do not close if the existing handler has prevented submission.
+                        if (modal && modal.classList.contains("active")) {
+                            closeModal();
+                            showToast("Application saved successfully.");
+                        }
+                    }, 150);
+                });
+            }
+
+            const exportButton = document.getElementById("exportBtn");
+            if (exportButton) {
+                exportButton.addEventListener("click", function () {
+                    showToast("CSV export will be enabled in the next upgrade.");
+                });
+            }
+
+            // Update the application count from the rendered table when rows change.
+            const tableBody = document.getElementById("jobTableBody");
+            const countLabel = document.getElementById("applicationCount");
+
+            function updateCount() {
+                if (!tableBody || !countLabel) return;
+                const rows = tableBody.querySelectorAll("tr");
+                const count = Array.from(rows).filter(function (row) {
+                    return row.querySelectorAll("td").length > 0;
+                }).length;
+
+                countLabel.textContent = count + (count === 1 ? " APPLICATION" : " APPLICATIONS");
+            }
+
+            if (tableBody && countLabel) {
+                const observer = new MutationObserver(updateCount);
+                observer.observe(tableBody, { childList: true, subtree: true });
+                updateCount();
+            }
+        });
+    </script>
+</body>
+</html>
